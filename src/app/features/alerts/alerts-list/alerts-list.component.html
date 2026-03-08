@@ -1,0 +1,42 @@
+<div class="alerts-container">
+  <div class="alerts-header">
+    <h1>Investigation Alerts</h1>
+    <p class="subtitle">Real-time alerts from ongoing investigations</p>
+  </div>
+
+  <div class="alerts-filters">
+    <button mat-stroked-button (click)="clearAllAlerts()" *ngIf="alerts.length > 0">
+      <mat-icon>delete_sweep</mat-icon>
+      Clear All Alerts
+    </button>
+  </div>
+
+  <div *ngIf="alerts.length === 0" class="no-alerts">
+    <mat-icon>info</mat-icon>
+    <p>No active alerts at this time</p>
+  </div>
+
+  <div *ngIf="alerts.length > 0" class="alerts-list">
+    <div *ngFor="let alert of alerts; trackBy: trackByAlertId" class="alert-item" [ngClass]="'alert-' + alert.type">
+      <div class="alert-header">
+        <mat-icon class="alert-icon">{{ getAlertIcon(alert.type) }}</mat-icon>
+        <div class="alert-title">
+          <strong>{{ alert.type | titlecase }}</strong>
+          <span class="alert-time">{{ alert.timestamp | date: 'HH:mm:ss' }}</span>
+        </div>
+        <button mat-icon-button (click)="dismissAlert(alert.id)" matTooltip="Dismiss Alert">
+          <mat-icon>close</mat-icon>
+        </button>
+      </div>
+      <div class="alert-content">
+        <p>{{ alert.description }}</p>
+        <div class="alert-details" *ngIf="alert.location">
+          <span class="detail-item">
+            <mat-icon>location_on</mat-icon>
+            {{ alert.location }}
+          </span>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>

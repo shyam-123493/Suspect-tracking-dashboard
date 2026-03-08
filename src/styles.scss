@@ -1,0 +1,127 @@
+/* Police Investigation Dashboard Global Styles */
+
+// Include Angular Material core
+@import '@angular/material/prebuilt-themes/indigo-pink.css';
+
+// Global Variables
+$primary-navy: #1a2a4a;
+$primary-steel: #3b5a8f;
+$accent-blue: #1976d2;
+$warn-red: #d32f2f;
+$background: #f5f5f5;
+$text-primary: #212121;
+$text-secondary: #757575;
+
+// Global Styles
+* {
+  margin: 0;
+  padding: 0;
+  box-sizing: border-box;
+}
+
+html, body {
+  height: 100%;
+  background-color: $background;
+  color: $text-primary;
+  font-family: 'Roboto', 'Helvetica Neue', sans-serif;
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+}
+
+app-root, app-shell {
+  display: block;
+  height: 100%;
+  width: 100%;
+}
+
+// Material Custom Theme (Dark Navy + Steel Blue)
+.mat-toolbar {
+  background-color: $primary-navy !important;
+  color: white !important;
+}
+
+.mat-card {
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+
+  &:hover {
+    box-shadow: 0 4px 16px rgba(0, 0, 0, 0.15);
+  }
+}
+
+.mat-button.mat-primary,
+.mat-raised-button.mat-primary {
+  background-color: $primary-steel !important;
+  color: white !important;
+
+  &:hover {
+    background-color: #2d4870 !important;
+  }
+}
+
+.mat-button.mat-warn,
+.mat-raised-button.mat-warn {
+  background-color: $warn-red !important;
+  color: white !important;
+}
+
+// Responsive Design
+
+// Prevent horizontal overflow globally
+html, body {
+  overflow-x: hidden;
+}
+
+// Ensure images and media scale
+img, video, svg {
+  max-width: 100%;
+  height: auto;
+}
+
+// Responsive text sizing
+@media (max-width: 1024px) {
+  body { font-size: 15px; }
+}
+
+@media (max-width: 768px) {
+  body { font-size: 14px; }
+
+  // Material table responsiveness
+  .mat-mdc-table {
+    display: block;
+    overflow-x: auto;
+    -webkit-overflow-scrolling: touch;
+  }
+
+  // Material form field full width on mobile
+  .mat-mdc-form-field {
+    width: 100%;
+  }
+
+  // Material dialog adjustments
+  .mat-mdc-dialog-container {
+    max-width: 95vw !important;
+  }
+}
+
+@media (max-width: 480px) {
+  body { font-size: 13px; }
+}
+
+// Scrollbar styling
+::-webkit-scrollbar {
+  width: 8px;
+  height: 8px;
+}
+
+::-webkit-scrollbar-track {
+  background: $background;
+}
+
+::-webkit-scrollbar-thumb {
+  background: $text-secondary;
+  border-radius: 4px;
+
+  &:hover {
+    background: #5a5a5a;
+  }
+}

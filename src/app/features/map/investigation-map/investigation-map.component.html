@@ -1,0 +1,74 @@
+<div class="map-wrapper">
+  <!-- Single suspect tracking banner -->
+  <div class="tracking-banner" *ngIf="singleSuspectMode && focusedSuspect">
+    <mat-icon>gps_fixed</mat-icon>
+    <span>Tracking: <strong>{{ focusedSuspect.name }}</strong></span>
+    <span class="threat-chip" [ngClass]="'chip-' + focusedSuspect.threatLevel">
+      {{ focusedSuspect.threatLevel | titlecase }}
+    </span>
+    <span class="spacer"></span>
+    <button mat-raised-button color="primary" (click)="showAllSuspects()">
+      <mat-icon>group</mat-icon>
+      Show All Suspects
+    </button>
+  </div>
+
+  <div class="map-header">
+    <button mat-raised-button [color]="isRunning ? 'warn' : 'primary'" (click)="toggleSimulation()">
+      <mat-icon>{{ isRunning ? 'pause' : 'play_arrow' }}</mat-icon>
+      {{ isRunning ? 'Pause' : 'Start' }}
+    </button>
+
+    <div class="divider"></div>
+
+    <label class="check-label" *ngIf="!singleSuspectMode">
+      <input type="checkbox" [(ngModel)]="showTravelHistory" (change)="onShowTravelHistoryChange()">
+      Travel History
+    </label>
+    <label class="check-label">
+      <input type="checkbox" [(ngModel)]="showZones" (change)="onShowZonesChange()">
+      Restricted Zones
+    </label>
+    <label class="check-label" *ngIf="!singleSuspectMode">
+      <input type="checkbox" [(ngModel)]="showHeatmap" (change)="onShowHeatmapChange()">
+      Heatmap
+    </label>
+
+    <span class="spacer"></span>
+
+    <span class="legend-item low" *ngIf="!singleSuspectMode">&#9679; Low Threat</span>
+    <span class="legend-item medium" *ngIf="!singleSuspectMode">&#9679; Medium Threat</span>
+    <span class="legend-item high" *ngIf="!singleSuspectMode">&#9679; High Threat</span>
+
+    <span class="trail-legend" *ngIf="singleSuspectMode">
+      <span class="trail-dot"></span> Historical Stop
+      <span class="trail-line"></span> Travel Path
+    </span>
+  </div>
+
+  <div class="map-area">
+    <div #mapElement id="map" class="leaflet-map"></div>
+    <div class="map-loader" *ngIf="isMapLoading">
+      <mat-progress-spinner mode="indeterminate" diameter="48"></mat-progress-spinner>
+      <p>Loading map...</p>
+    </div>
+  </div>
+
+  <div class="map-info" *ngIf="selectedSuspect">
+    <mat-card class="suspect-card">
+      <mat-card-header>
+        <mat-card-title>{{ selectedSuspect.name }}</mat-card-title>
+        <mat-card-subtitle>Threat: {{ selectedSuspect.threatLevel | titlecase }}</mat-card-subtitle>
+      </mat-card-header>
+      <mat-card-content>
+        <p><strong>Location:</strong> {{ selectedSuspect.lat.toFixed(4) }}, {{ selectedSuspect.lng.toFixed(4) }}</p>
+        <p><strong>Speed:</strong> {{ selectedSuspect.speed }} km/h</p>
+        <p><strong>Vehicle:</strong> {{ selectedSuspect.vehicle }}</p>
+        <p><strong>Associates:</strong> {{ selectedSuspect.associates.length }}</p>
+      </mat-card-content>
+      <mat-card-actions>
+        <button mat-button (click)="closeSuspectInfo()">Close</button>
+      </mat-card-actions>
+    </mat-card>
+  </div>
+</div>

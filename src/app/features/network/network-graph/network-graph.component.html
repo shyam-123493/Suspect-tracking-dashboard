@@ -1,0 +1,74 @@
+<div class="network-container">
+  <div class="network-header">
+    <h1>Suspect Network Graph</h1>
+    <p class="subtitle">Visualize relationships and connections between suspects</p>
+  </div>
+
+  <div class="network-controls">
+    <div class="control-group">
+      <label>
+        <span>Connection Strength:</span>
+        <input type="range" [(ngModel)]="connectionThreshold" min="0" max="100" class="slider">
+        <span class="value">{{ connectionThreshold }}%</span>
+      </label>
+    </div>
+    <button mat-raised-button color="primary" (click)="resetView()">
+      <mat-icon>center_focus_strong</mat-icon>
+      Reset View
+    </button>
+    <button mat-raised-button color="accent" (click)="viewAllOnMap()">
+      <mat-icon>map</mat-icon>
+      View All on Map
+    </button>
+  </div>
+
+  <div #networkElement id="network-graph" class="network-graph"></div>
+
+  <div class="network-legend">
+    <h3>Legend</h3>
+    <div class="legend-items">
+      <div class="legend-item">
+        <div class="node-circle low-threat"></div>
+        <span>Low Threat Suspect</span>
+      </div>
+      <div class="legend-item">
+        <div class="node-circle medium-threat"></div>
+        <span>Medium Threat Suspect</span>
+      </div>
+      <div class="legend-item">
+        <div class="node-circle high-threat"></div>
+        <span>High Threat Suspect</span>
+      </div>
+      <div class="legend-item">
+        <div class="connection strong"></div>
+        <span>Strong Connection</span>
+      </div>
+      <div class="legend-item">
+        <div class="connection weak"></div>
+        <span>Weak Connection</span>
+      </div>
+    </div>
+  </div>
+
+  <div class="network-info" *ngIf="selectedNode">
+    <mat-card class="info-card">
+      <mat-card-header>
+        <mat-card-title>{{ selectedNode.label }}</mat-card-title>
+        <mat-card-subtitle>Threat Level: {{ selectedNode.threatLevel | titlecase }}</mat-card-subtitle>
+      </mat-card-header>
+      <mat-card-content>
+        <p><strong>Connected To:</strong> {{ getConnectedSuspects(selectedNode.id).length }} suspects</p>
+        <p><strong>Threat Score:</strong> {{ selectedNode.threatScore }}/100</p>
+      </mat-card-content>
+      <mat-card-actions>
+        <button mat-button color="primary" (click)="viewOnMap(selectedNode.id)">
+          <mat-icon>map</mat-icon> Track on Map
+        </button>
+        <button mat-button color="primary" (click)="viewProfile(selectedNode.id)">
+          <mat-icon>person</mat-icon> Profile
+        </button>
+        <button mat-button (click)="closeInfo()">Close</button>
+      </mat-card-actions>
+    </mat-card>
+  </div>
+</div>

@@ -1,0 +1,415 @@
+<div class="cases-container">
+  <div class="cases-header">
+    <div class="header-text">
+      <h1>Investigation Cases</h1>
+      <p class="subtitle">Manage and track active investigation cases</p>
+    </div>
+    <button mat-raised-button color="primary" (click)="openAddCase()">
+      <mat-icon>add</mat-icon>
+      Add New Case
+    </button>
+  </div>
+
+  <mat-card class="cases-card">
+    <mat-card-content>
+      <div class="table-container">
+        <table mat-table [dataSource]="cases" class="cases-table">
+          <!-- Case ID Column -->
+          <ng-container matColumnDef="id">
+            <th mat-header-cell *matHeaderCellDef>Case ID</th>
+            <td mat-cell *matCellDef="let element">CASE-{{ element.id.toString().padStart(4, '0') }}</td>
+          </ng-container>
+
+          <!-- Title Column -->
+          <ng-container matColumnDef="title">
+            <th mat-header-cell *matHeaderCellDef>Title</th>
+            <td mat-cell *matCellDef="let element">{{ element.title }}</td>
+          </ng-container>
+
+          <!-- Status Column -->
+          <ng-container matColumnDef="status">
+            <th mat-header-cell *matHeaderCellDef>Status</th>
+            <td mat-cell *matCellDef="let element">
+              <span class="status-badge" [ngClass]="'status-' + element.status">
+                {{ element.status | titlecase }}
+              </span>
+            </td>
+          </ng-container>
+
+          <!-- Priority Column -->
+          <ng-container matColumnDef="priority">
+            <th mat-header-cell *matHeaderCellDef>Priority</th>
+            <td mat-cell *matCellDef="let element">
+              <span class="priority-badge" [ngClass]="'priority-' + element.priority">
+                {{ element.priority | titlecase }}
+              </span>
+            </td>
+          </ng-container>
+
+          <!-- Suspects Column -->
+          <ng-container matColumnDef="suspects">
+            <th mat-header-cell *matHeaderCellDef>Suspects</th>
+            <td mat-cell *matCellDef="let element">{{ element.suspects.length }}</td>
+          </ng-container>
+
+          <!-- Date Column -->
+          <ng-container matColumnDef="date">
+            <th mat-header-cell *matHeaderCellDef>Created Date</th>
+            <td mat-cell *matCellDef="let element">{{ element.createdDate | date: 'short' }}</td>
+          </ng-container>
+
+          <!-- Actions Column -->
+          <ng-container matColumnDef="actions">
+            <th mat-header-cell *matHeaderCellDef>Actions</th>
+            <td mat-cell *matCellDef="let element">
+              <button mat-icon-button matTooltip="View Details" (click)="openView(element); $event.stopPropagation()">
+                <mat-icon>visibility</mat-icon>
+              </button>
+              <button mat-icon-button matTooltip="Edit Case" (click)="openEdit(element); $event.stopPropagation()">
+                <mat-icon>edit</mat-icon>
+              </button>
+            </td>
+          </ng-container>
+
+          <tr mat-header-row *matHeaderRowDef="displayedColumns"></tr>
+          <tr mat-row *matRowDef="let row; columns: displayedColumns;"></tr>
+        </table>
+      </div>
+    </mat-card-content>
+  </mat-card>
+</div>
+
+<!-- ═══════════ VIEW DETAILS OVERLAY ═══════════ -->
+<div class="overlay-backdrop" *ngIf="viewCase" (click)="closeView()">
+  <div class="overlay-panel view-panel" (click)="$event.stopPropagation()">
+    <div class="panel-header">
+      <div>
+        <h2>CASE-{{ viewCase.id.toString().padStart(4, '0') }}</h2>
+        <span class="panel-subtitle">{{ viewCase.title }}</span>
+      </div>
+      <button mat-icon-button (click)="closeView()">
+        <mat-icon>close</mat-icon>
+      </button>
+    </div>
+
+    <div class="panel-body">
+      <!-- Status & Priority -->
+      <div class="detail-row">
+        <div class="detail-group">
+          <span class="detail-label">Status</span>
+          <span class="status-badge" [ngClass]="'status-' + viewCase.status">
+            {{ viewCase.status | titlecase }}
+          </span>
+        </div>
+        <div class="detail-group">
+          <span class="detail-label">Priority</span>
+          <span class="priority-badge" [ngClass]="'priority-' + viewCase.priority">
+            {{ viewCase.priority | titlecase }}
+          </span>
+        </div>
+        <div class="detail-group">
+          <span class="detail-label">Case Officer</span>
+          <span class="detail-value">{{ viewCase.caseOfficer || 'Unassigned' }}</span>
+        </div>
+      </div>
+
+      <!-- Dates -->
+      <div class="detail-row">
+        <div class="detail-group">
+          <span class="detail-label">Created</span>
+          <span class="detail-value">{{ viewCase.createdDate | date: 'medium' }}</span>
+        </div>
+        <div class="detail-group">
+          <span class="detail-label">Last Updated</span>
+          <span class="detail-value">{{ viewCase.updatedDate | date: 'medium' }}</span>
+        </div>
+      </div>
+
+      <!-- Description -->
+      <div class="detail-section">
+        <h3><mat-icon>description</mat-icon> Description</h3>
+        <p>{{ viewCase.description }}</p>
+      </div>
+
+      <!-- Investigation Notes -->
+      <div class="detail-section">
+        <h3><mat-icon>note</mat-icon> Investigation Notes</h3>
+        <p class="notes-text">{{ viewCase.notes || 'No notes recorded.' }}</p>
+      </div>
+
+      <!-- Linked Suspects -->
+      <div class="detail-section">
+        <h3><mat-icon>people</mat-icon> Linked Suspects ({{ viewSuspects.length }})</h3>
+        <div class="suspect-chips" *ngIf="viewSuspects.length > 0">
+          <div *ngFor="let s of viewSuspects" class="suspect-chip" [ngClass]="'chip-bg-' + s.threatLevel">
+            <span class="chip-avatar">{{ s.name.charAt(0) }}</span>
+            <span class="chip-name">{{ s.name }}</span>
+            <span class="chip-threat">{{ s.threatLevel | titlecase }}</span>
+          </div>
+        </div>
+        <p *ngIf="viewSuspects.length === 0" class="empty-text">No suspects linked</p>
+      </div>
+
+      <!-- Documents -->
+      <div class="detail-section">
+        <h3><mat-icon>folder</mat-icon> Documents ({{ viewCase.documents?.length || 0 }})</h3>
+        <div *ngIf="viewCase.documents && viewCase.documents.length > 0" class="doc-list">
+          <div *ngFor="let doc of viewCase.documents" class="doc-item">
+            <mat-icon class="doc-icon">{{ getDocIcon(doc.type) }}</mat-icon>
+            <div class="doc-info">
+              <span class="doc-name">{{ doc.name }}</span>
+              <span class="doc-meta">{{ doc.size }} &bull; {{ doc.uploadedBy }} &bull; {{ doc.uploadedDate | date: 'shortDate' }}</span>
+            </div>
+          </div>
+        </div>
+        <p *ngIf="!viewCase.documents || viewCase.documents.length === 0" class="empty-text">No documents attached</p>
+      </div>
+
+      <!-- ═══ ANALYZE CASE BUTTON ═══ -->
+      <div class="analysis-toggle-section">
+        <button mat-raised-button [color]="showAnalysis ? 'warn' : 'primary'" (click)="showAnalysis ? closeAnalysis() : openAnalysis()">
+          <mat-icon>{{ showAnalysis ? 'close' : 'analytics' }}</mat-icon>
+          {{ showAnalysis ? 'Close Analysis' : 'Analyze Case' }}
+        </button>
+      </div>
+
+      <!-- ═══ ANALYSIS PANEL ═══ -->
+      <div class="analysis-panel" *ngIf="showAnalysis && analysisResult">
+
+        <!-- Overall Risk Banner -->
+        <div class="risk-banner" [style.border-left-color]="getRiskColor(analysisResult.overallRisk)">
+          <div class="risk-header-row">
+            <div class="risk-level" [style.color]="getRiskColor(analysisResult.overallRisk)">
+              <mat-icon>{{ analysisResult.overallRisk === 'critical' ? 'error' : analysisResult.overallRisk === 'high' ? 'warning' : 'info' }}</mat-icon>
+              <span class="risk-label">{{ analysisResult.overallRisk | titlecase }} Risk</span>
+            </div>
+            <div class="risk-score-circle" [style.border-color]="getRiskColor(analysisResult.overallRisk)">
+              <span class="risk-score-value">{{ analysisResult.overallRiskScore }}</span>
+            </div>
+          </div>
+          <p class="risk-summary">{{ analysisResult.summary }}</p>
+        </div>
+
+        <!-- Suspect Rankings -->
+        <h3 class="analysis-section-title">
+          <mat-icon>leaderboard</mat-icon>
+          Suspect Focus Ranking
+        </h3>
+
+        <div class="suspect-analysis-cards">
+          <div *ngFor="let item of analysisResult.suspectScores; let i = index" class="suspect-analysis-card">
+            <div class="sac-header">
+              <div class="sac-rank" [style.background]="getRiskColor(item.totalScore >= 75 ? 'critical' : item.totalScore >= 55 ? 'high' : item.totalScore >= 35 ? 'medium' : 'low')">
+                #{{ i + 1 }}
+              </div>
+              <div class="sac-info">
+                <span class="sac-name">{{ item.suspect.name }}</span>
+                <span class="sac-threat">{{ item.suspect.threatLevel | titlecase }} Threat &bull; Score: <strong>{{ item.totalScore }}</strong></span>
+              </div>
+              <div class="sac-total-badge" [style.background]="getRiskColor(item.totalScore >= 75 ? 'critical' : item.totalScore >= 55 ? 'high' : item.totalScore >= 35 ? 'medium' : 'low')">
+                {{ item.totalScore }}
+              </div>
+            </div>
+
+            <!-- Breakdown Bars -->
+            <div class="sac-breakdown">
+              <div *ngFor="let b of item.breakdown" class="breakdown-item">
+                <span class="breakdown-label">{{ b.label }}</span>
+                <div class="breakdown-bar-track">
+                  <div class="breakdown-bar-fill" [style.width.%]="b.value" [style.background]="getBarColor(b.value)"></div>
+                </div>
+                <span class="breakdown-value">{{ b.value }}</span>
+              </div>
+            </div>
+
+            <!-- Recommended Actions -->
+            <div class="sac-actions">
+              <span class="sac-actions-label">Recommended Actions:</span>
+              <ul>
+                <li *ngFor="let action of item.recommendedActions">{{ action }}</li>
+              </ul>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- ═══════════ EDIT CASE OVERLAY ═══════════ -->
+<div class="overlay-backdrop" *ngIf="editCase" (click)="closeEdit()">
+  <div class="overlay-panel edit-panel" (click)="$event.stopPropagation()">
+    <div class="panel-header">
+      <div>
+        <h2>Edit Case</h2>
+        <span class="panel-subtitle">CASE-{{ editCase.id.toString().padStart(4, '0') }}</span>
+      </div>
+      <button mat-icon-button (click)="closeEdit()">
+        <mat-icon>close</mat-icon>
+      </button>
+    </div>
+
+    <div class="panel-body edit-body">
+      <mat-form-field appearance="outline" class="full-width">
+        <mat-label>Title</mat-label>
+        <input matInput [(ngModel)]="editForm.title">
+      </mat-form-field>
+
+      <mat-form-field appearance="outline" class="full-width">
+        <mat-label>Description</mat-label>
+        <textarea matInput [(ngModel)]="editForm.description" rows="3"></textarea>
+      </mat-form-field>
+
+      <div class="form-row">
+        <mat-form-field appearance="outline">
+          <mat-label>Status</mat-label>
+          <mat-select [(ngModel)]="editForm.status">
+            <mat-option value="open">Open</mat-option>
+            <mat-option value="under_investigation">Under Investigation</mat-option>
+            <mat-option value="closed">Closed</mat-option>
+          </mat-select>
+        </mat-form-field>
+
+        <mat-form-field appearance="outline">
+          <mat-label>Priority</mat-label>
+          <mat-select [(ngModel)]="editForm.priority">
+            <mat-option value="low">Low</mat-option>
+            <mat-option value="medium">Medium</mat-option>
+            <mat-option value="high">High</mat-option>
+            <mat-option value="critical">Critical</mat-option>
+          </mat-select>
+        </mat-form-field>
+      </div>
+
+      <mat-form-field appearance="outline" class="full-width">
+        <mat-label>Case Officer</mat-label>
+        <input matInput [(ngModel)]="editForm.caseOfficer">
+      </mat-form-field>
+
+      <mat-form-field appearance="outline" class="full-width">
+        <mat-label>Investigation Notes</mat-label>
+        <textarea matInput [(ngModel)]="editForm.notes" rows="4"></textarea>
+      </mat-form-field>
+
+      <!-- Documents Section -->
+      <div class="edit-docs-section">
+        <div class="docs-header">
+          <h3><mat-icon>folder</mat-icon> Documents</h3>
+          <button mat-stroked-button color="primary" (click)="attachDocument()">
+            <mat-icon>attach_file</mat-icon>
+            Attach Document
+          </button>
+        </div>
+
+        <div *ngIf="editCase.documents && editCase.documents.length > 0" class="doc-list">
+          <div *ngFor="let doc of editCase.documents" class="doc-item editable">
+            <mat-icon class="doc-icon">{{ getDocIcon(doc.type) }}</mat-icon>
+            <div class="doc-info">
+              <span class="doc-name">{{ doc.name }}</span>
+              <span class="doc-meta">{{ doc.size }} &bull; {{ doc.uploadedBy }}</span>
+            </div>
+            <button mat-icon-button color="warn" matTooltip="Remove" (click)="removeDocument(doc.id)">
+              <mat-icon>delete</mat-icon>
+            </button>
+          </div>
+        </div>
+        <p *ngIf="!editCase.documents || editCase.documents.length === 0" class="empty-text">No documents attached yet</p>
+      </div>
+    </div>
+
+    <div class="panel-footer">
+      <button mat-button (click)="closeEdit()">Cancel</button>
+      <button mat-raised-button color="primary" (click)="saveEdit()">
+        <mat-icon>save</mat-icon>
+        Save Changes
+      </button>
+    </div>
+  </div>
+</div>
+
+<!-- ═══════════ ADD NEW CASE OVERLAY ═══════════ -->
+<div class="overlay-backdrop" *ngIf="showAddCase" (click)="closeAddCase()">
+  <div class="overlay-panel add-panel" (click)="$event.stopPropagation()">
+    <div class="panel-header">
+      <div>
+        <h2>Add New Case</h2>
+        <span class="panel-subtitle">Create a new investigation case</span>
+      </div>
+      <button mat-icon-button (click)="closeAddCase()">
+        <mat-icon>close</mat-icon>
+      </button>
+    </div>
+
+    <div class="panel-body edit-body">
+      <mat-form-field appearance="outline" class="full-width">
+        <mat-label>Case Title</mat-label>
+        <input matInput [(ngModel)]="addForm.title" placeholder="Enter case title">
+      </mat-form-field>
+
+      <mat-form-field appearance="outline" class="full-width">
+        <mat-label>Description</mat-label>
+        <textarea matInput [(ngModel)]="addForm.description" rows="3" placeholder="Describe the case..."></textarea>
+      </mat-form-field>
+
+      <div class="form-row">
+        <mat-form-field appearance="outline">
+          <mat-label>Status</mat-label>
+          <mat-select [(ngModel)]="addForm.status">
+            <mat-option value="open">Open</mat-option>
+            <mat-option value="under_investigation">Under Investigation</mat-option>
+          </mat-select>
+        </mat-form-field>
+
+        <mat-form-field appearance="outline">
+          <mat-label>Priority</mat-label>
+          <mat-select [(ngModel)]="addForm.priority">
+            <mat-option value="low">Low</mat-option>
+            <mat-option value="medium">Medium</mat-option>
+            <mat-option value="high">High</mat-option>
+            <mat-option value="critical">Critical</mat-option>
+          </mat-select>
+        </mat-form-field>
+      </div>
+
+      <mat-form-field appearance="outline" class="full-width">
+        <mat-label>Case Officer</mat-label>
+        <input matInput [(ngModel)]="addForm.caseOfficer" placeholder="Assigned officer name">
+      </mat-form-field>
+
+      <mat-form-field appearance="outline" class="full-width">
+        <mat-label>Investigation Notes</mat-label>
+        <textarea matInput [(ngModel)]="addForm.notes" rows="3" placeholder="Initial notes..."></textarea>
+      </mat-form-field>
+
+      <!-- Suspect Selection -->
+      <div class="suspect-selection-section">
+        <h3><mat-icon>people</mat-icon> Link Suspects</h3>
+        <p class="selection-hint">Select suspects to associate with this case</p>
+        <div class="suspect-checkboxes">
+          <div *ngFor="let suspect of allSuspects" class="suspect-check-item" [ngClass]="'threat-' + suspect.threatLevel">
+            <mat-checkbox
+              [checked]="isSuspectSelected(suspect.id)"
+              (change)="toggleSuspect(suspect.id)"
+              color="primary">
+              <div class="check-suspect-info">
+                <span class="check-suspect-name">{{ suspect.name }}</span>
+                <span class="check-suspect-threat" [ngClass]="'threat-text-' + suspect.threatLevel">{{ suspect.threatLevel | titlecase }}</span>
+              </div>
+            </mat-checkbox>
+          </div>
+        </div>
+        <p class="selected-count" *ngIf="selectedSuspectIds.length > 0">
+          {{ selectedSuspectIds.length }} suspect{{ selectedSuspectIds.length > 1 ? 's' : '' }} selected
+        </p>
+      </div>
+    </div>
+
+    <div class="panel-footer">
+      <button mat-button (click)="closeAddCase()">Cancel</button>
+      <button mat-raised-button color="primary" (click)="saveNewCase()" [disabled]="!addForm.title.trim()">
+        <mat-icon>add_circle</mat-icon>
+        Create Case
+      </button>
+    </div>
+  </div>
+</div>

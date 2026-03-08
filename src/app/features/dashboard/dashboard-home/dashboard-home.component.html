@@ -1,0 +1,224 @@
+<div class="dashboard-container">
+  <div class="dashboard-header">
+    <div>
+      <h1>Investigation Dashboard</h1>
+      <p class="subtitle">Mumbai Metropolitan Police — Real-time Overview</p>
+    </div>
+    <div class="sim-control">
+      <button mat-raised-button [color]="isRunning ? 'warn' : 'primary'" (click)="toggleSimulation()">
+        <mat-icon>{{ isRunning ? 'pause' : 'play_arrow' }}</mat-icon>
+        {{ isRunning ? 'Pause Simulation' : 'Start Simulation' }}
+      </button>
+      <span class="sim-status" [ngClass]="isRunning ? 'running' : 'paused'">
+        <span class="pulse-dot"></span>
+        {{ isRunning ? 'Live' : 'Paused' }}
+      </span>
+    </div>
+  </div>
+
+  <!-- Metric Cards -->
+  <div class="metrics-row">
+    <div class="metric-card" [routerLink]="['/suspects']">
+      <div class="metric-icon suspects-icon">
+        <mat-icon>people</mat-icon>
+      </div>
+      <div class="metric-body">
+        <div class="metric-value">{{ totalSuspects }}</div>
+        <div class="metric-label">Active Suspects</div>
+      </div>
+      <div class="metric-trend">
+        <mat-icon>trending_flat</mat-icon>
+      </div>
+    </div>
+
+    <div class="metric-card" [routerLink]="['/cases']">
+      <div class="metric-icon cases-icon">
+        <mat-icon>folder</mat-icon>
+      </div>
+      <div class="metric-body">
+        <div class="metric-value">{{ openCases }}</div>
+        <div class="metric-label">Open Cases</div>
+      </div>
+      <div class="metric-trend">
+        <mat-icon>trending_flat</mat-icon>
+      </div>
+    </div>
+
+    <div class="metric-card high-risk" [routerLink]="['/suspects']">
+      <div class="metric-icon risk-icon">
+        <mat-icon>warning</mat-icon>
+      </div>
+      <div class="metric-body">
+        <div class="metric-value">{{ highRiskSuspects }}</div>
+        <div class="metric-label">High Risk</div>
+      </div>
+      <div class="metric-trend">
+        <mat-icon color="warn">trending_up</mat-icon>
+      </div>
+    </div>
+
+    <div class="metric-card alerts-card" [routerLink]="['/alerts']">
+      <div class="metric-icon alerts-icon">
+        <mat-icon>notifications_active</mat-icon>
+      </div>
+      <div class="metric-body">
+        <div class="metric-value">{{ recentAlerts }}</div>
+        <div class="metric-label">Recent Alerts</div>
+      </div>
+      <div class="metric-trend">
+        <mat-icon>trending_up</mat-icon>
+      </div>
+    </div>
+  </div>
+
+  <!-- Main Content Row -->
+  <div class="content-row">
+
+    <!-- Suspect Threat Breakdown -->
+    <mat-card class="chart-card">
+      <mat-card-header>
+        <mat-card-title>Suspect Threat Distribution</mat-card-title>
+      </mat-card-header>
+      <mat-card-content>
+        <div class="threat-bars">
+          <div class="threat-bar-item">
+            <div class="bar-label">High Threat</div>
+            <div class="bar-track">
+              <div class="bar-fill high"
+                   [style.width.%]="(highRiskSuspects / totalSuspects) * 100"></div>
+            </div>
+            <div class="bar-count high-text">{{ highRiskSuspects }}</div>
+          </div>
+          <div class="threat-bar-item">
+            <div class="bar-label">Medium Threat</div>
+            <div class="bar-track">
+              <div class="bar-fill medium"
+                   [style.width.%]="(mediumRiskSuspects / totalSuspects) * 100"></div>
+            </div>
+            <div class="bar-count medium-text">{{ mediumRiskSuspects }}</div>
+          </div>
+          <div class="threat-bar-item">
+            <div class="bar-label">Low Threat</div>
+            <div class="bar-track">
+              <div class="bar-fill low"
+                   [style.width.%]="(lowRiskSuspects / totalSuspects) * 100"></div>
+            </div>
+            <div class="bar-count low-text">{{ lowRiskSuspects }}</div>
+          </div>
+        </div>
+      </mat-card-content>
+    </mat-card>
+
+    <!-- Active Cases Overview -->
+    <mat-card class="chart-card">
+      <mat-card-header>
+        <mat-card-title>Cases by Priority</mat-card-title>
+      </mat-card-header>
+      <mat-card-content>
+        <div class="cases-overview">
+          <div *ngFor="let item of casesByPriority" class="priority-row">
+            <div class="priority-label" [ngClass]="'label-' + item.priority">
+              {{ item.priority | titlecase }}
+            </div>
+            <div class="priority-track">
+              <div class="priority-fill" [ngClass]="'fill-' + item.priority"
+                   [style.width.%]="(item.count / totalCases) * 100"></div>
+            </div>
+            <div class="priority-count">{{ item.count }}</div>
+          </div>
+        </div>
+      </mat-card-content>
+    </mat-card>
+
+  </div>
+
+  <!-- Recent Activity + Top Suspects -->
+  <div class="bottom-row">
+
+    <!-- Recent Suspects -->
+    <mat-card class="table-card">
+      <mat-card-header>
+        <mat-card-title>Suspects by Threat Score</mat-card-title>
+        <div class="card-actions-header">
+          <button mat-button color="primary" [routerLink]="['/suspects']">
+            View All <mat-icon>arrow_forward</mat-icon>
+          </button>
+        </div>
+      </mat-card-header>
+      <mat-card-content>
+        <div class="mini-table">
+          <div *ngFor="let s of topSuspects" class="mini-row" [routerLink]="['/suspects', s.id]">
+            <div class="mini-avatar" [ngClass]="'avatar-' + s.threatLevel">{{ s.name.charAt(0) }}</div>
+            <div class="mini-info">
+              <div class="mini-name">{{ s.name }}</div>
+              <div class="mini-loc">{{ s.lastKnownLocation }}</div>
+            </div>
+            <div class="mini-score">
+              <div class="score-bar">
+                <div class="score-fill" [ngClass]="'score-' + s.threatLevel"
+                     [style.width.%]="s.threatScore"></div>
+              </div>
+              <span class="score-val">{{ s.threatScore }}</span>
+            </div>
+          </div>
+        </div>
+      </mat-card-content>
+    </mat-card>
+
+    <!-- Recent Cases -->
+    <mat-card class="table-card">
+      <mat-card-header>
+        <mat-card-title>Active Cases</mat-card-title>
+        <div class="card-actions-header">
+          <button mat-button color="primary" [routerLink]="['/cases']">
+            View All <mat-icon>arrow_forward</mat-icon>
+          </button>
+        </div>
+      </mat-card-header>
+      <mat-card-content>
+        <div class="mini-table">
+          <div *ngFor="let c of activeCases" class="mini-row" [routerLink]="['/cases']">
+            <div class="case-num">{{ c.id.toString().padStart(3,'0') }}</div>
+            <div class="mini-info">
+              <div class="mini-name">{{ c.title }}</div>
+              <div class="mini-loc">{{ c.caseOfficer }}</div>
+            </div>
+            <span class="priority-badge-sm" [ngClass]="'p-' + c.priority">{{ c.priority }}</span>
+          </div>
+        </div>
+      </mat-card-content>
+    </mat-card>
+
+    <!-- Quick Links -->
+    <mat-card class="quick-links-card">
+      <mat-card-header>
+        <mat-card-title>Quick Navigation</mat-card-title>
+      </mat-card-header>
+      <mat-card-content>
+        <div class="quick-links">
+          <button mat-stroked-button class="quick-btn" [routerLink]="['/map']">
+            <mat-icon>map</mat-icon>
+            Investigation Map
+          </button>
+          <button mat-stroked-button class="quick-btn" [routerLink]="['/suspects']">
+            <mat-icon>people</mat-icon>
+            Suspect Directory
+          </button>
+          <button mat-stroked-button class="quick-btn" [routerLink]="['/alerts']">
+            <mat-icon>notifications</mat-icon>
+            Alert Center
+          </button>
+          <button mat-stroked-button class="quick-btn" [routerLink]="['/network']">
+            <mat-icon>hub</mat-icon>
+            Network Graph
+          </button>
+          <button mat-stroked-button class="quick-btn" [routerLink]="['/cases']">
+            <mat-icon>folder_open</mat-icon>
+            Case Files
+          </button>
+        </div>
+      </mat-card-content>
+    </mat-card>
+
+  </div>
+</div>

@@ -1,0 +1,292 @@
+<div class="profile-container" *ngIf="suspect; else notFound">
+
+  <!-- Profile Header -->
+  <div class="profile-header" [ngClass]="'threat-bg-' + suspect.threatLevel">
+    <button mat-icon-button (click)="goBack()" class="back-btn">
+      <mat-icon>arrow_back</mat-icon>
+    </button>
+    <div class="header-content">
+      <div class="avatar-large">{{ suspect.name.charAt(0) }}</div>
+      <div class="header-info">
+        <h1>{{ suspect.name }}</h1>
+        <div class="header-meta">
+          <span class="meta-chip">Age {{ suspect.age }}</span>
+          <span class="threat-chip" [ngClass]="'chip-' + suspect.threatLevel">
+            {{ suspect.threatLevel | titlecase }} Threat
+          </span>
+          <span class="score-chip">Score: {{ suspect.threatScore }}/100</span>
+        </div>
+        <p class="vehicle">{{ suspect.vehicle }}</p>
+      </div>
+    </div>
+    <div class="header-actions">
+      <button mat-raised-button (click)="viewOnMap()" class="map-btn">
+        <mat-icon>map</mat-icon>
+        Track on Map
+      </button>
+    </div>
+    <div class="header-stats">
+      <div class="stat">
+        <div class="stat-value">{{ suspect.casesInvolved.length }}</div>
+        <div class="stat-label">Cases</div>
+      </div>
+      <div class="stat">
+        <div class="stat-value">{{ suspect.associates.length }}</div>
+        <div class="stat-label">Associates</div>
+      </div>
+      <div class="stat">
+        <div class="stat-value">{{ suspect.speed }}</div>
+        <div class="stat-label">km/h</div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Tabs -->
+  <mat-tab-group class="profile-tabs">
+
+    <!-- Overview Tab -->
+    <mat-tab label="Overview">
+      <div class="tab-content">
+        <div class="overview-grid">
+          <mat-card class="info-card">
+            <mat-card-header>
+              <mat-card-title>
+                <mat-icon>info</mat-icon>
+                Personal Information
+              </mat-card-title>
+            </mat-card-header>
+            <mat-card-content>
+              <div class="info-row">
+                <span class="label">Full Name</span>
+                <span class="value">{{ suspect.name }}</span>
+              </div>
+              <div class="info-row">
+                <span class="label">Age</span>
+                <span class="value">{{ suspect.age }} years</span>
+              </div>
+              <div class="info-row">
+                <span class="label">Threat Level</span>
+                <span class="value threat-badge" [ngClass]="'badge-' + suspect.threatLevel">
+                  {{ suspect.threatLevel | titlecase }}
+                </span>
+              </div>
+              <div class="info-row">
+                <span class="label">Threat Score</span>
+                <span class="value">{{ suspect.threatScore }}/100</span>
+              </div>
+              <div class="info-row">
+                <span class="label">Status</span>
+                <span class="value">{{ suspect.isActive ? 'Active' : 'Inactive' }}</span>
+              </div>
+            </mat-card-content>
+          </mat-card>
+
+          <mat-card class="info-card">
+            <mat-card-header>
+              <mat-card-title>
+                <mat-icon>location_on</mat-icon>
+                Current Location
+              </mat-card-title>
+            </mat-card-header>
+            <mat-card-content>
+              <div class="info-row">
+                <span class="label">Last Known Location</span>
+                <span class="value">{{ suspect.lastKnownLocation }}</span>
+              </div>
+              <div class="info-row">
+                <span class="label">GPS Coordinates</span>
+                <span class="value">{{ suspect.lat.toFixed(5) }}, {{ suspect.lng.toFixed(5) }}</span>
+              </div>
+              <div class="info-row">
+                <span class="label">Current Speed</span>
+                <span class="value">{{ suspect.speed }} km/h</span>
+              </div>
+              <div class="info-row">
+                <span class="label">Vehicle</span>
+                <span class="value">{{ suspect.vehicle }}</span>
+              </div>
+            </mat-card-content>
+          </mat-card>
+        </div>
+      </div>
+    </mat-tab>
+
+    <!-- Travel History Tab -->
+    <mat-tab label="Travel History">
+      <div class="tab-content">
+        <div *ngIf="travelHistory.length > 0; else noHistory" class="timeline">
+          <div *ngFor="let entry of travelHistory; let i = index" class="timeline-item">
+            <div class="timeline-dot" [ngClass]="'dot-' + getActionColor(entry.action)"></div>
+            <div class="timeline-content">
+              <div class="timeline-header">
+                <strong>{{ entry.location }}</strong>
+                <span class="timeline-time">{{ entry.date | date: 'dd MMM, HH:mm' }}</span>
+              </div>
+              <div class="timeline-meta">
+                <span class="action-badge" [ngClass]="'action-' + entry.action">
+                  {{ entry.action | titlecase }}
+                </span>
+                <span *ngIf="entry.duration">Duration: {{ entry.duration }} min</span>
+              </div>
+              <div class="timeline-coords">
+                {{ entry.lat.toFixed(4) }}, {{ entry.lng.toFixed(4) }}
+              </div>
+            </div>
+          </div>
+        </div>
+        <ng-template #noHistory>
+          <div class="empty-state">
+            <mat-icon>history</mat-icon>
+            <p>No travel history available</p>
+          </div>
+        </ng-template>
+      </div>
+    </mat-tab>
+
+    <!-- Associates Tab -->
+    <mat-tab label="Associates">
+      <div class="tab-content">
+        <div *ngIf="associates.length > 0; else noAssociates" class="associates-grid">
+          <mat-card *ngFor="let assoc of associates" class="assoc-card"
+                    [routerLink]="['/suspects', assoc.id]" style="cursor:pointer">
+            <mat-card-content>
+              <div class="assoc-header">
+                <div class="assoc-avatar" [ngClass]="'avatar-' + assoc.threatLevel">
+                  {{ assoc.name.charAt(0) }}
+                </div>
+                <div>
+                  <div class="assoc-name">{{ assoc.name }}</div>
+                  <span class="threat-chip-sm" [ngClass]="'chip-' + assoc.threatLevel">
+                    {{ assoc.threatLevel | titlecase }}
+                  </span>
+                </div>
+              </div>
+              <div class="assoc-details">
+                <span><mat-icon>directions_car</mat-icon> {{ assoc.vehicle }}</span>
+                <span><mat-icon>location_on</mat-icon> {{ assoc.lastKnownLocation }}</span>
+              </div>
+            </mat-card-content>
+          </mat-card>
+        </div>
+        <ng-template #noAssociates>
+          <div class="empty-state">
+            <mat-icon>people</mat-icon>
+            <p>No known associates</p>
+          </div>
+        </ng-template>
+      </div>
+    </mat-tab>
+
+    <!-- Cases Tab -->
+    <mat-tab label="Cases">
+      <div class="tab-content">
+        <div *ngIf="cases.length > 0; else noCases" class="cases-list">
+          <mat-card *ngFor="let c of cases" class="case-card">
+            <mat-card-content>
+              <div class="case-header">
+                <div>
+                  <div class="case-title">{{ c.title }}</div>
+                  <div class="case-id">CASE-{{ c.id.toString().padStart(4, '0') }}</div>
+                </div>
+                <span class="priority-badge" [ngClass]="'priority-' + c.priority">
+                  {{ c.priority | titlecase }}
+                </span>
+              </div>
+              <p class="case-desc">{{ c.description }}</p>
+              <div class="case-footer">
+                <span class="status-badge" [ngClass]="'status-' + c.status">
+                  {{ c.status | titlecase }}
+                </span>
+                <span class="case-officer">{{ c.caseOfficer }}</span>
+              </div>
+            </mat-card-content>
+          </mat-card>
+        </div>
+        <ng-template #noCases>
+          <div class="empty-state">
+            <mat-icon>folder_open</mat-icon>
+            <p>No cases linked to this suspect</p>
+          </div>
+        </ng-template>
+      </div>
+    </mat-tab>
+
+    <!-- Call History Tab -->
+    <mat-tab label="Call History">
+      <div class="tab-content">
+        <div *ngIf="callHistory.length > 0; else noCalls" class="call-history-list">
+          <div class="call-stats">
+            <div class="call-stat">
+              <mat-icon class="stat-icon incoming">call_received</mat-icon>
+              <div class="stat-info">
+                <span class="stat-num">{{ incomingCount }}</span>
+                <span class="stat-lbl">Incoming</span>
+              </div>
+            </div>
+            <div class="call-stat">
+              <mat-icon class="stat-icon outgoing">call_made</mat-icon>
+              <div class="stat-info">
+                <span class="stat-num">{{ outgoingCount }}</span>
+                <span class="stat-lbl">Outgoing</span>
+              </div>
+            </div>
+            <div class="call-stat">
+              <mat-icon class="stat-icon missed">call_missed</mat-icon>
+              <div class="stat-info">
+                <span class="stat-num">{{ missedCount }}</span>
+                <span class="stat-lbl">Missed</span>
+              </div>
+            </div>
+          </div>
+
+          <mat-card *ngFor="let call of callHistory" class="call-card">
+            <mat-card-content>
+              <div class="call-row">
+                <div class="call-type-icon" [ngClass]="'call-' + call.callType">
+                  <mat-icon>{{ getCallIcon(call.callType) }}</mat-icon>
+                </div>
+                <div class="call-info">
+                  <div class="call-contact">
+                    {{ call.contactName }}
+                    <span class="monitored-badge" *ngIf="call.isMonitored"
+                          matTooltip="This contact is under surveillance">
+                      <mat-icon>visibility</mat-icon> Monitored
+                    </span>
+                  </div>
+                  <div class="call-number">{{ call.contactNumber }}</div>
+                </div>
+                <div class="call-meta">
+                  <div class="call-time">{{ call.timestamp | date: 'dd MMM, HH:mm' }}</div>
+                  <div class="call-duration">{{ formatDuration(call.duration) }}</div>
+                </div>
+              </div>
+              <div class="call-details">
+                <span class="call-location">
+                  <mat-icon>location_on</mat-icon> {{ call.location }}
+                </span>
+                <span class="call-note" *ngIf="call.notes">
+                  <mat-icon>note</mat-icon> {{ call.notes }}
+                </span>
+              </div>
+            </mat-card-content>
+          </mat-card>
+        </div>
+        <ng-template #noCalls>
+          <div class="empty-state">
+            <mat-icon>phone_disabled</mat-icon>
+            <p>No call history available</p>
+          </div>
+        </ng-template>
+      </div>
+    </mat-tab>
+
+  </mat-tab-group>
+</div>
+
+<ng-template #notFound>
+  <div class="not-found">
+    <mat-icon>person_off</mat-icon>
+    <h2>Suspect not found</h2>
+    <button mat-raised-button color="primary" (click)="goBack()">Go Back</button>
+  </div>
+</ng-template>

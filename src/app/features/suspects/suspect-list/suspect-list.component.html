@@ -1,0 +1,123 @@
+<div class="suspects-container">
+  <div class="page-header">
+    <h1>Suspect Directory</h1>
+    <p class="subtitle">{{ suspects.length }} suspects under investigation</p>
+  </div>
+
+  <div class="filter-bar">
+    <mat-form-field appearance="outline" class="search-field">
+      <mat-label>Search suspects...</mat-label>
+      <mat-icon matPrefix>search</mat-icon>
+      <input matInput [(ngModel)]="searchTerm" (ngModelChange)="applyFilter()" placeholder="Name, vehicle, location...">
+    </mat-form-field>
+
+    <mat-form-field appearance="outline" class="filter-field">
+      <mat-label>Threat Level</mat-label>
+      <mat-select [(ngModel)]="selectedThreatLevel" (ngModelChange)="applyFilter()">
+        <mat-option value="">All</mat-option>
+        <mat-option value="high">High</mat-option>
+        <mat-option value="medium">Medium</mat-option>
+        <mat-option value="low">Low</mat-option>
+      </mat-select>
+    </mat-form-field>
+  </div>
+
+  <mat-card class="suspects-card">
+    <mat-card-content>
+      <table mat-table [dataSource]="filteredSuspects" matSort class="suspects-table">
+
+        <!-- Threat indicator Column -->
+        <ng-container matColumnDef="threat">
+          <th mat-header-cell *matHeaderCellDef>Threat</th>
+          <td mat-cell *matCellDef="let s">
+            <div class="threat-indicator" [ngClass]="'threat-' + s.threatLevel"
+                 [matTooltip]="'Score: ' + s.threatScore">
+              {{ s.threatScore }}
+            </div>
+          </td>
+        </ng-container>
+
+        <!-- Name Column -->
+        <ng-container matColumnDef="name">
+          <th mat-header-cell *matHeaderCellDef>Name</th>
+          <td mat-cell *matCellDef="let s">
+            <div class="suspect-name-cell">
+              <div class="avatar" [ngClass]="'avatar-' + s.threatLevel">
+                {{ s.name.charAt(0) }}
+              </div>
+              <div>
+                <div class="name">{{ s.name }}</div>
+                <div class="age">Age {{ s.age }}</div>
+              </div>
+            </div>
+          </td>
+        </ng-container>
+
+        <!-- Last Location Column -->
+        <ng-container matColumnDef="location">
+          <th mat-header-cell *matHeaderCellDef>Last Known Location</th>
+          <td mat-cell *matCellDef="let s">
+            <div class="location-cell">
+              <mat-icon class="loc-icon">location_on</mat-icon>
+              {{ s.lastKnownLocation }}
+            </div>
+          </td>
+        </ng-container>
+
+        <!-- Vehicle Column -->
+        <ng-container matColumnDef="vehicle">
+          <th mat-header-cell *matHeaderCellDef>Vehicle</th>
+          <td mat-cell *matCellDef="let s">{{ s.vehicle }}</td>
+        </ng-container>
+
+        <!-- Speed Column -->
+        <ng-container matColumnDef="speed">
+          <th mat-header-cell *matHeaderCellDef>Speed</th>
+          <td mat-cell *matCellDef="let s">{{ s.speed }} km/h</td>
+        </ng-container>
+
+        <!-- Cases Column -->
+        <ng-container matColumnDef="cases">
+          <th mat-header-cell *matHeaderCellDef>Cases</th>
+          <td mat-cell *matCellDef="let s">
+            <span class="cases-badge">{{ s.casesInvolved.length }}</span>
+          </td>
+        </ng-container>
+
+        <!-- Status Column -->
+        <ng-container matColumnDef="status">
+          <th mat-header-cell *matHeaderCellDef>Status</th>
+          <td mat-cell *matCellDef="let s">
+            <span class="status-chip" [ngClass]="s.isActive ? 'active' : 'inactive'">
+              <span class="dot"></span>
+              {{ s.isActive ? 'Active' : 'Inactive' }}
+            </span>
+          </td>
+        </ng-container>
+
+        <!-- Actions Column -->
+        <ng-container matColumnDef="actions">
+          <th mat-header-cell *matHeaderCellDef>Actions</th>
+          <td mat-cell *matCellDef="let s">
+            <button mat-icon-button matTooltip="View Profile" [routerLink]="['/suspects', s.id]" (click)="$event.stopPropagation()">
+              <mat-icon>person</mat-icon>
+            </button>
+            <button mat-icon-button matTooltip="Track on Map" [routerLink]="['/map']" [queryParams]="{suspect: s.id}" (click)="$event.stopPropagation()">
+              <mat-icon>map</mat-icon>
+            </button>
+          </td>
+        </ng-container>
+
+        <tr mat-header-row *matHeaderRowDef="displayedColumns"></tr>
+        <tr mat-row *matRowDef="let row; columns: displayedColumns;"
+            class="suspect-row"
+            [routerLink]="['/suspects', row.id]"></tr>
+      </table>
+
+      <div *ngIf="filteredSuspects.length === 0" class="no-results">
+        <mat-icon>search_off</mat-icon>
+        <p>No suspects match your search</p>
+      </div>
+    </mat-card-content>
+  </mat-card>
+</div>

@@ -1,0 +1,115 @@
+<mat-sidenav-container class="sidenav-container" [@.disabled]="true">
+
+  <mat-sidenav #sidenav [mode]="sidenavMode" [opened]="isSidenavOpen"
+               (closedStart)="isSidenavOpen = false"
+               class="sidenav" [class.mobile-sidenav]="isMobile">
+
+    <!-- Brand -->
+    <div class="sidenav-brand">
+      <div class="brand-icon">
+        <mat-icon>local_police</mat-icon>
+      </div>
+      <div class="brand-text" *ngIf="isSidenavOpen">
+        <div class="brand-title">POLICE</div>
+        <div class="brand-subtitle">Investigation System</div>
+      </div>
+    </div>
+
+    <!-- Navigation -->
+    <nav class="sidenav-nav">
+      <a mat-list-item routerLink="/dashboard" routerLinkActive="active-link" class="nav-item"
+         matTooltip="Dashboard" [matTooltipDisabled]="isSidenavOpen" (click)="onNavClick()">
+        <mat-icon>dashboard</mat-icon>
+        <span class="nav-label" *ngIf="isSidenavOpen">Dashboard</span>
+      </a>
+
+      <a mat-list-item routerLink="/map" routerLinkActive="active-link" class="nav-item"
+         matTooltip="Investigation Map" [matTooltipDisabled]="isSidenavOpen" (click)="onNavClick()">
+        <mat-icon>map</mat-icon>
+        <span class="nav-label" *ngIf="isSidenavOpen">Investigation Map</span>
+      </a>
+
+      <a mat-list-item routerLink="/suspects" routerLinkActive="active-link" class="nav-item"
+         matTooltip="Suspects" [matTooltipDisabled]="isSidenavOpen" (click)="onNavClick()">
+        <mat-icon>people</mat-icon>
+        <span class="nav-label" *ngIf="isSidenavOpen">Suspects</span>
+      </a>
+
+      <a mat-list-item routerLink="/cases" routerLinkActive="active-link" class="nav-item"
+         matTooltip="Cases" [matTooltipDisabled]="isSidenavOpen" (click)="onNavClick()">
+        <mat-icon>folder</mat-icon>
+        <span class="nav-label" *ngIf="isSidenavOpen">Cases</span>
+      </a>
+
+      <a mat-list-item routerLink="/alerts" routerLinkActive="active-link" class="nav-item"
+         matTooltip="Alerts" [matTooltipDisabled]="isSidenavOpen" (click)="onNavClick()">
+        <mat-icon>notifications</mat-icon>
+        <span class="nav-label" *ngIf="isSidenavOpen">Alerts</span>
+        <span class="badge" *ngIf="alertCount > 0">{{ alertCount }}</span>
+      </a>
+
+      <a mat-list-item routerLink="/network" routerLinkActive="active-link" class="nav-item"
+         matTooltip="Network Graph" [matTooltipDisabled]="isSidenavOpen" (click)="onNavClick()">
+        <mat-icon>hub</mat-icon>
+        <span class="nav-label" *ngIf="isSidenavOpen">Network Graph</span>
+      </a>
+    </nav>
+
+    <!-- User section -->
+    <div class="sidenav-footer" *ngIf="isSidenavOpen">
+      <div class="user-info">
+        <mat-icon>account_circle</mat-icon>
+        <div>
+          <div class="user-name">{{ username }}</div>
+          <div class="user-role">Investigating Officer</div>
+        </div>
+      </div>
+      <button mat-icon-button (click)="logout()" matTooltip="Logout" class="logout-btn">
+        <mat-icon>logout</mat-icon>
+      </button>
+    </div>
+
+    <div class="sidenav-footer-mini" *ngIf="!isSidenavOpen">
+      <button mat-icon-button (click)="logout()" matTooltip="Logout" class="logout-btn">
+        <mat-icon>logout</mat-icon>
+      </button>
+    </div>
+
+  </mat-sidenav>
+
+  <mat-sidenav-content class="main-content">
+
+    <!-- Top Toolbar -->
+    <mat-toolbar class="top-toolbar">
+      <button mat-icon-button (click)="toggleSidenav()" class="menu-btn">
+        <mat-icon>{{ isSidenavOpen ? 'menu_open' : 'menu' }}</mat-icon>
+      </button>
+
+      <span class="toolbar-title">{{ pageTitle }}</span>
+
+      <span class="spacer"></span>
+
+      <div class="toolbar-right">
+        <span class="sim-indicator" [ngClass]="isRunning ? 'sim-running' : 'sim-paused'"
+              matTooltip="Simulation Status">
+          <span class="sim-dot"></span>
+          {{ isRunning ? 'Live' : 'Paused' }}
+        </span>
+
+        <button mat-icon-button [routerLink]="['/alerts']" matTooltip="View Alerts">
+          <mat-icon [matBadge]="alertCount > 0 ? alertCount.toString() : null"
+                    matBadgeColor="warn">
+            notifications
+          </mat-icon>
+        </button>
+      </div>
+    </mat-toolbar>
+
+    <!-- Page Content -->
+    <div class="page-content">
+      <router-outlet></router-outlet>
+    </div>
+
+  </mat-sidenav-content>
+
+</mat-sidenav-container>
