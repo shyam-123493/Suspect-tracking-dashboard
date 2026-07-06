@@ -1,59 +1,106 @@
-# PoliceDashboard
+# Suspect Tracking Dashboard
 
-This project was generated using [Angular CLI](https://github.com/angular/angular-cli) version 19.2.13.
+A police investigation dashboard built with **Angular 19** for tracking suspects, visualizing their movements on an interactive map, analyzing associate networks, and managing cases and alerts. All data is simulated (dummy data) — no backend is required, making it ideal for demos and prototyping.
 
-## Development server
+## Features
 
-To start a local development server, run:
+- **Dashboard** — At-a-glance overview with key stats and charts (Chart.js / ng2-charts)
+- **Investigation Map** — Interactive Leaflet map with marker clustering and heatmap layers to visualize suspect locations and movement
+- **Suspects** — Searchable suspect list with detailed profiles including travel history, call history, and known associations
+- **Network Graph** — D3-powered graph visualizing relationships between suspects and their associates
+- **Alerts** — Zone-based alerts when suspects enter monitored areas
+- **Cases** — Case management view linking suspects and investigations
+- **Authentication** — Simulated login with route guards (any username with a password of 4+ characters works)
+- **Live Simulation** — A simulation service generates ongoing location updates to mimic real-time tracking
 
-```bash
-ng serve
-```
+## Tech Stack
 
-Once the server is running, open your browser and navigate to `http://localhost:4200/`. The application will automatically reload whenever you modify any of the source files.
+| Layer | Technology |
+|---|---|
+| Framework | Angular 19 (standalone components, lazy-loaded routes) |
+| UI | Angular Material + Angular CDK, SCSS |
+| Maps | Leaflet, leaflet.heat, leaflet.markercluster |
+| Charts | Chart.js, ng2-charts |
+| Network graph | D3.js |
+| State / async | RxJS |
+| Testing | Jasmine + Karma |
 
-## Code scaffolding
+## Getting Started
 
-Angular CLI includes powerful code scaffolding tools. To generate a new component, run:
+### Prerequisites
 
-```bash
-ng generate component component-name
-```
+- Node.js 18.19+ (or 20.11+)
+- npm
 
-For a complete list of available schematics (such as `components`, `directives`, or `pipes`), run:
-
-```bash
-ng generate --help
-```
-
-## Building
-
-To build the project run:
-
-```bash
-ng build
-```
-
-This will compile your project and store the build artifacts in the `dist/` directory. By default, the production build optimizes your application for performance and speed.
-
-## Running unit tests
-
-To execute unit tests with the [Karma](https://karma-runner.github.io) test runner, use the following command:
+### Installation
 
 ```bash
-ng test
+git clone <repository-url>
+cd Suspect-tracking-dashboard
+npm install
 ```
 
-## Running end-to-end tests
-
-For end-to-end (e2e) testing, run:
+### Development server
 
 ```bash
-ng e2e
+npm start
 ```
 
-Angular CLI does not come with an end-to-end testing framework by default. You can choose one that suits your needs.
+Navigate to `http://localhost:4200/`. The app reloads automatically when you change source files.
 
-## Additional Resources
+Log in with any username and a password of at least 4 characters (auth is simulated and stored in `localStorage`).
 
-For more information on using the Angular CLI, including detailed command references, visit the [Angular CLI Overview and Command Reference](https://angular.dev/tools/cli) page.
+### Production build
+
+```bash
+npm run build
+```
+
+Build artifacts are output to `dist/police-dashboard/`. The project is configured for deployment on **Vercel**.
+
+### Running tests
+
+```bash
+npm test
+```
+
+## Project Structure
+
+```
+src/app/
+├── core/
+│   ├── guards/          # authGuard for protected routes
+│   └── services/        # auth, suspect, case, alert, location, simulation
+├── features/
+│   ├── auth/            # Login page
+│   ├── dashboard/       # Dashboard home with stats & charts
+│   ├── map/             # Investigation map (Leaflet)
+│   ├── suspects/        # Suspect list & profile pages
+│   ├── network/         # D3 network graph
+│   ├── alerts/          # Alerts list
+│   └── cases/           # Cases list
+├── layout/
+│   └── shell/           # App shell (nav, layout) wrapping authed routes
+└── shared/
+    ├── interfaces/      # Suspect, Case, Alert, Zone, TravelHistory, etc.
+    └── utils/           # Dummy data generation, geolocation helpers
+```
+
+## Routes
+
+| Path | Description |
+|---|---|
+| `/login` | Login page (public) |
+| `/dashboard` | Overview dashboard (default) |
+| `/map` | Investigation map |
+| `/suspects` | Suspect list |
+| `/suspects/:id` | Suspect profile |
+| `/network` | Association network graph |
+| `/alerts` | Alerts list |
+| `/cases` | Cases list |
+
+All routes except `/login` are protected by `authGuard` and lazy-loaded.
+
+## Disclaimer
+
+This application uses entirely fictional, randomly generated data. It is a demo/prototype and is not connected to any real law-enforcement system.
