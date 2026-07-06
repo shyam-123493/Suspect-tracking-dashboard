@@ -1,5 +1,5 @@
 # Suspect Tracking Dashboard
-
+. [🔗 Live Demo](https://suspect-tracking-dashboard.vercel.app/map)
 A police investigation dashboard built with **Angular 19** for tracking suspects, visualizing their movements on an interactive map, analyzing associate networks, and managing cases and alerts. All data is simulated (dummy data) — no backend is required, making it ideal for demos and prototyping.
 
 ## Features
